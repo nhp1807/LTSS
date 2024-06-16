@@ -34,7 +34,8 @@ int main(int argc, char *argv[])
   double start_time, end_time, com_start_time, com_end_time;
   double total_time = 0.0;
   double total_com_time = 0.0;
-  int total_number = 600000;
+  double total_time_show;
+  int total_number = 2700000;
 
   /*
     Khởi tạo MPI
@@ -107,8 +108,8 @@ int main(int argc, char *argv[])
     printf("B  = %d\n", b);
     printf("C  = %d\n", c);
   }
-  int number_each_process = total_number / p;
 
+  int number_each_process = total_number / p;
   k_hi = p * number_each_process;
 
   /*
@@ -214,12 +215,11 @@ int main(int argc, char *argv[])
   if (id == 0)
   {
     end_time = MPI_Wtime();
+    total_time = end_time - start_time;
   }
 
-  /*
-    Calculate times
-  */
-  total_time = end_time - start_time;
+  MPI_Reduce(&total_time, &total_time_show, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+
 
   /*
     In thời gian thực thi tổng thể tại processor 0.
@@ -240,8 +240,9 @@ int main(int argc, char *argv[])
   
   if (id == 0)
   {
-    printf("Total execution time (T_w_com): %f seconds.\n", total_time);
-    printf("Execution time without communication (T_wo_com): %f seconds.\n", total_time - total_com_time);
+    printf("Total communication time: %f\n", total_com_time);
+    printf("Total execution time (T_w_com): %f seconds.\n", total_time_show);
+    printf("Execution time without communication (T_wo_com): %f seconds.\n", total_time_show - total_com_time);
     printf("Each processor has %d numbers\n", number_each_process);
     printf("Total number of random numbers: %d\n", total_number);
     printf("Total of processors: %d\n", p);
