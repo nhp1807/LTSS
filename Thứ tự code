@@ -1,0 +1,29 @@
+1.    Khởi tạo các giá trị cần thiết
+2.    Khởi tạo MPI
+3.    Lấy số lượng và rank của các processor
+4.    In ra màn hình master thông tin, cách tính toán
+5.    Khởi tạo giá trị a, b, c: https://en.wikipedia.org/wiki/Linear_congruential_generator
+6.    In giá trị a, b, c ra màn hình máy master
+7.    Khởi tạo giá trị k_hi: số lượng số cần sinh ra: ở đây đặt là p * k với k là số các số sinh ra của mỗi prossesor
+8.    In ra k_hi giá trị random trên màn hình master
+8.1.  k = 0, v = 12345 --> v là giá trị khởi tạo
+      Các số random bắt đầu từ k = 1
+8.2.  Vòng lặp for k từ 1 -> k_hi (số lượng số cần sinh ra)
+      Gắn u bằng giá trị sinh ra của bước trước đó
+      Thực hiện lcrg_evaluate() để tính giá trị đầu ra, lặp lại đến hết
+9.    lcrg_anbn() sử dụng để tính giá trị an, bn, đây là giá trị để tính giá trị ngẫu nhiên thứ n để tính toán trong các processor
+9.1.  Đầu ra của 0 bằng đầu vào của 1
+      Đầu ra của 1 bằng đầu vào của 2 
+9.2.  congruence() sử dụng để tính phương trình đồng dư A * X = C (mod B)
+9.3.  Tìm hiểu về giải phương trình đồng dư và giải thuật Euclide mở rộng: https://vi.wikipedia.org/wiki/Gi%E1%BA%A3i_thu%E1%BA%ADt_Euclid_m%E1%BB%9F_r%E1%BB%99ng
+10.   In ra giá trị an và bn cũng như là các giá trị được sinh ra từ các processor
+10.1. Từng processor sẽ thực hiện in ra các giá trị mà mình đã sinh ra
+      Vòng for j chạy từ 1 -> id sử dụng để tính được giá trị đầu vào cho mỗi processor
+10.2. Sau khi có giá trị đầu vào, chúng thực hiện tính các giá trị tiếp theo, mỗi giá trị cách nhau p bước
+      Giả sử có 6 process và mỗi process sinh ra 5 số:
+      Process 0 sẽ sinh ra các giá trị ở vị trí k = 6, 12, 18, 24, 30
+      Process 1 sẽ sinh ra các giá trị ở vị trí k = 1, 7, 13, 19, 25
+      Process 2 sẽ sinh ra các giá trị ở vị trí k = 2, 8, 14, 20, 26
+      Process 3 sẽ sinh ra các giá trị ở vị trí k = 3, 9, 15, 21, 27
+      Process 4 sẽ sinh ra các giá trị ở vị trí k = 4, 10, 16, 22, 28
+      Process 5 sẽ sinh ra các giá trị ở vị trí k = 5, 11, 17, 23, 29
