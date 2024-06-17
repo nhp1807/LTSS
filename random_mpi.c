@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
   double total_time = 0.0;
   double total_com_time = 0.0;
   double total_time_show;
-  int total_number = 900000000;
+  int total_number = 2000000000;
 
   /*
     Khởi tạo MPI
