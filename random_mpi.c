@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
   double total_time = 0.0;
   double total_com_time = 0.0;
   double total_time_show;
-  int total_number = 2700000;
+  int total_number = 900000000;
 
   /*
     Khởi tạo MPI
@@ -60,6 +60,8 @@ int main(int argc, char *argv[])
   */
 
   MPI_Comm_rank(MPI_COMM_WORLD, &id);
+
+  start_time = MPI_Wtime();
 
   /*
     In message ra màn hình của máy master.
@@ -115,10 +117,10 @@ int main(int argc, char *argv[])
   /*
     Bắt đầu đo thời gian.
   */
-  if (id == 0)
-  {
-    start_time = MPI_Wtime();
-  }
+  // if (id == 0)
+  // {
+  //   start_time = MPI_Wtime();
+  // }
 
   /*
     Processor 0 sinh ra 10 * P giá trị random.
@@ -170,21 +172,37 @@ int main(int argc, char *argv[])
   printf("Id: %d\n", id);
   for (j = 1; j <= id; j++)
   {
+
+    // start_time = MPI_Wtime();
+
     u = v;
     v = lcrg_evaluate(a, b, c, u);
+
+    // end_time = MPI_Wtime();
+    // total_time += end_time - start_time;
   }
+  // start_time = MPI_Wtime();
   k = id;
   printf("v: %d\n", v);
 
   printf("  %4d  %4d                %12d --\n", k, id, v);
+  // end_time = MPI_Wtime();
+  // total_time += end_time - start_time;
+  
   /*
     Sử dụng LCRG để tính toán các giá trị với chỉ số ID, ID + P, ID + 2P, ...
   */
   for (k = id + p; k <= k_hi; k = k + p)
   {
+
+    // start_time = MPI_Wtime();
+
     u = v;
     v = lcrg_evaluate(an, bn, c, u);
-    printf("  %4d  %4d  %12d  %12d ---\n", k, id, u, v);
+    // printf("  %4d  %4d  %12d  %12d ---\n", k, id, u, v);
+
+    // end_time = MPI_Wtime();
+    // total_time += end_time - start_time;
   }
 
   /*
@@ -204,22 +222,24 @@ int main(int argc, char *argv[])
   }
   else
   {
+    com_start_time = MPI_Wtime();
     int received_value;
     MPI_Recv(&received_value, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     printf("Processor %d received value %d from processor 0\n", id, received_value);
+    com_end_time = MPI_Wtime();
+    total_com_time = total_com_time + com_end_time - com_start_time;
   }
 
   /*
     End timing
   */
-  if (id == 0)
-  {
+  // if (id == 0)
+  // {
     end_time = MPI_Wtime();
     total_time = end_time - start_time;
-  }
+  // }
 
   MPI_Reduce(&total_time, &total_time_show, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
-
 
   /*
     In thời gian thực thi tổng thể tại processor 0.
@@ -237,12 +257,12 @@ int main(int argc, char *argv[])
     Terminate MPI.
   */
   MPI_Finalize();
-  
+
   if (id == 0)
   {
     printf("Total communication time: %f\n", total_com_time);
-    printf("Total execution time (T_w_com): %f seconds.\n", total_time_show);
-    printf("Execution time without communication (T_wo_com): %f seconds.\n", total_time_show - total_com_time);
+    printf("Total execution time (T_w_com): %f seconds.\n", total_time);
+    printf("Execution time without communication (T_wo_com): %f seconds.\n", total_time - total_com_time);
     printf("Each processor has %d numbers\n", number_each_process);
     printf("Total number of random numbers: %d\n", total_number);
     printf("Total of processors: %d\n", p);
