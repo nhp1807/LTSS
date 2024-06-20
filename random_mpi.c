@@ -172,110 +172,131 @@ int main(int argc, char *argv[])
   printf("Id: %d\n", id);
   for (j = 1; j <= id; j++)
   {
-
-    // start_time = MPI_Wtime();
-
     u = v;
     v = lcrg_evaluate(a, b, c, u);
-
-    // end_time = MPI_Wtime();
-    // total_time += end_time - start_time;
   }
-  // start_time = MPI_Wtime();
   k = id;
   printf("v: %d\n", v);
 
   printf("  %4d  %4d                %12d --\n", k, id, v);
-  // end_time = MPI_Wtime();
-  // total_time += end_time - start_time;
   
   /*
     Sử dụng LCRG để tính toán các giá trị với chỉ số ID, ID + P, ID + 2P, ...
   */
   for (k = id + p; k <= k_hi; k = k + p)
   {
-
-    // start_time = MPI_Wtime();
-
     u = v;
     v = lcrg_evaluate(an, bn, c, u);
     // printf("  %4d  %4d  %12d  %12d ---\n", k, id, u, v);
 
-    // end_time = MPI_Wtime();
-    // total_time += end_time - start_time;
   }
 
-  /*
-    Đo thời gian truyền thông
-  */
+  // /*
+  //   Đo thời gian truyền thông
+  // */
 
-  // Tiến hành truyền thông: Tiến trình 0 gửi giá trị cuối cùng của nó đến tất cả các tiến trình khác.
-  if (id == 0)
-  {
-    com_start_time = MPI_Wtime();
-    for (int dest = 1; dest < p; dest++)
-    {
-      MPI_Send(&v, 1, MPI_INT, dest, 0, MPI_COMM_WORLD);
-    }
-    com_end_time = MPI_Wtime();
-    total_com_time = total_com_time + com_end_time - com_start_time;
-  }
-  else
-  {
-    com_start_time = MPI_Wtime();
-    int received_value;
-    MPI_Recv(&received_value, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    printf("Processor %d received value %d from processor 0\n", id, received_value);
-    com_end_time = MPI_Wtime();
-    total_com_time = total_com_time + com_end_time - com_start_time;
-  }
-
-  /*
-    End timing
-  */
+  // // Tiến hành truyền thông: Tiến trình 0 gửi giá trị cuối cùng của nó đến tất cả các tiến trình khác.
   // if (id == 0)
   // {
-    end_time = MPI_Wtime();
-    total_time = end_time - start_time;
+  //   com_start_time = MPI_Wtime();
+  //   for (int dest = 1; dest < p; dest++)
+  //   {
+  //     MPI_Send(&v, 1, MPI_INT, dest, 0, MPI_COMM_WORLD);
+  //   }
+  //   com_end_time = MPI_Wtime();
+  //   total_com_time = total_com_time + com_end_time - com_start_time;
+  // }
+  // else
+  // {
+  //   com_start_time = MPI_Wtime();
+  //   int received_value;
+  //   MPI_Recv(&received_value, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+  //   printf("Processor %d received value %d from processor 0\n", id, received_value);
+  //   com_end_time = MPI_Wtime();
+  //   total_com_time = total_com_time + com_end_time - com_start_time;
   // }
 
-  MPI_Reduce(&total_time, &total_time_show, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+  // /*
+  //   End timing
+  // */
+  // // if (id == 0)
+  // // {
+  //   end_time = MPI_Wtime();
+  //   total_time = end_time - start_time;
+  // // }
 
-  /*
-    In thời gian thực thi tổng thể tại processor 0.
-  */
+  // MPI_Reduce(&total_time, &total_time_show, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+
+  // /*
+  //   Terminate MPI.
+  // */
+  // MPI_Finalize();
+
   // if (id == 0)
   // {
+  //   printf("Total communication time: %f\n", total_com_time);
   //   printf("Total execution time (T_w_com): %f seconds.\n", total_time);
   //   printf("Execution time without communication (T_wo_com): %f seconds.\n", total_time - total_com_time);
   //   printf("Each processor has %d numbers\n", number_each_process);
   //   printf("Total number of random numbers: %d\n", total_number);
   //   printf("Total of processors: %d\n", p);
   // }
+  // if (id == 0)
+  // {
+  //   printf("\n");
+  //   printf("RANDOM_MPI:\n");
+  //   printf("  Normal end of execution.\n");
+  //   printf("\n");
+  //   timestamp();
+  // }
+  // return 0;
+  int final_value = v;
+    int *all_final_values = NULL;
+    if (id == 0)
+    {
+        all_final_values = (int *)malloc(p * sizeof(int));
+    }
 
-  /*
-    Terminate MPI.
-  */
-  MPI_Finalize();
+    com_start_time = MPI_Wtime();
+    MPI_Gather(&final_value, 1, MPI_INT, all_final_values, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    com_end_time = MPI_Wtime();
+    total_com_time = total_com_time + com_end_time - com_start_time;
 
-  if (id == 0)
-  {
-    printf("Total communication time: %f\n", total_com_time);
-    printf("Total execution time (T_w_com): %f seconds.\n", total_time);
-    printf("Execution time without communication (T_wo_com): %f seconds.\n", total_time - total_com_time);
-    printf("Each processor has %d numbers\n", number_each_process);
-    printf("Total number of random numbers: %d\n", total_number);
-    printf("Total of processors: %d\n", p);
-  }
-  if (id == 0)
-  {
-    printf("\n");
-    printf("RANDOM_MPI:\n");
-    printf("  Normal end of execution.\n");
-    printf("\n");
-    timestamp();
-  }
-  return 0;
+    if (id == 0)
+    {
+        for (int i = 0; i < p; i++)
+        {
+            printf("Processor %d final value: %d\n", i, all_final_values[i]);
+        }
+        free(all_final_values);
+    }
+
+    end_time = MPI_Wtime();
+    total_time = end_time - start_time;
+
+    MPI_Reduce(&total_time, &total_time_show, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+
+    if (id == 0)
+    {
+        printf("Total communication time: %f\n", total_com_time);
+        printf("Total execution time (T_w_com): %f seconds.\n", total_time);
+        printf("Execution time without communication (T_wo_com): %f seconds.\n", total_time - total_com_time);
+        printf("Each processor has %d numbers\n", number_each_process);
+        printf("Total number of random numbers: %d\n", total_number);
+        printf("Total of processors: %d\n", p);
+    }
+
+    MPI_Finalize();
+
+    if (id == 0)
+    {
+        printf("\n");
+        printf("RANDOM_MPI:\n");
+        printf("  Normal end of execution.\n");
+        printf("\n");
+        timestamp();
+    }
+    return 0;
 }
 
 int congruence(int a, int b, int c, int *error)
